@@ -1,9 +1,9 @@
 {
   "work": [
     {
-      "date": "September 2018 - Present",
-      "title": "Software Developer at Lava Lamp Lab",
-      "description": "Conduct Work in developing cross-platform mobile applications (iOS and Android) as well as Backend applications. \n\nWe mainly develop using Agile over two-week sprints.",
+      "date": "Jan 2020 - Present",
+      "title": "Graduate Teaching Assistant @ George Mason University",
+      "description": "<ul><li>Lab assistant for the course “Security Laboratory” and instructed students on setting up and using security tools and technologies like SIEM (Splunk), Firewalls (Pfsense, IPTables), OSINT tools (Shodan, Maltego, etc), IDS (Snort), Windows and Linux logging (Sysmon), Macro based pattern matching (YARA, Olevba), SQL Injection, XSS, Windows Active Directory Administration, LLMNR poisoning, SMB Relay attacks, Golden ticket attack (Mimikatz) and Command and Control communications (Covenant).</li>\n<li>Responsible for assessing assignments and assisting students with course related queries and troubleshooting their labs.</li> </ul>",
       "stack": [
         "Ionic",
         "Angular",

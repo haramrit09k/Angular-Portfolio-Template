@@ -1,13 +1,5 @@
 {
   "top_skills": [
-    "Ionic",
-    "Angular",
-    "NodeJs",
-    "Git",
-    "Python",
-    "JavaScript",
-    "Express",
-    "Android",
-    "MongoDB"
+    "AWS", "GIS", "Android", "PCAP analysis (Wireshark, tcpdump)", "Fluxion", "Shell Scripting", "C", "Python", "Databases", "Kali Linux", "Ubuntu"
   ]
 }

@@ -1,30 +1,34 @@
 {
-  "email": "rnldhv91@gmail.com",
-  "location": "Durbanville, Cape Town",
-  "name": "Ronald Hove",
-  "phone": "",
-  "avatar": "assets/media/images/pro_offerzen.jpg",
+  "email": "snmahdi97@gmail.com",
+  "location": "Fairfax, VA",
+  "name": "Nabeel Sayed",
+  "phone": "703-341-9688",
+  "avatar": "assets/media/images/profile_pic_nabeel.jpeg",
   "education": [
     {
-      "title": "Bachelor of Science (BSc) in Computer Science and Information Systems",
-      "meta": "University of the Western Cape,  Jan 2014 – Nov 2018"
+      "title": "Master of Science in Information Security and Assurance",
+      "meta": "George Mason University,  Aug 2019 – May 2021, GPA: 3.72/4.0"
+    },
+    {
+      "title": "Bachelor of Engineering in Information Technology",
+      "meta": "Mumbai University,  Jul 2015 – May 2019, GPA: 3.5/4.0"
     }
   ],
-  "about": "I consider myself a value adder. I resolute to being a key asset of objective teams while seeking value from colleagues to add to my strengths. I love computer science and information technology.\n\nI have acquired experience building industry standard, production ready applications from working as a full time software developer and being a full time technology hobbyist.",
+  "about": "A penetration tester and cloud security enthusiast with background in secure programming, security audit and compliance, network security, operating system security and vulnerability assessment. An excellent communicator and team player with a liking for sharing knowledge with the team. Skills in network and systems programming, PCAP analysis, SIEM, AWS, Azure and Scripting.",
   "socials": [
     {
-      "name": "rnldhv91@gmail.com",
-      "link": "mailto:rnldhv91@gmail.com",
+      "name": "snmahdi97@gmail.com",
+      "link": "mailto:snmahdi97@gmail.com",
       "icon": "fa fa-envelope"
     },
     {
-      "name": "Github",
-      "link": "https://github.com/ronald-hove",
+      "name": "GitHub",
+      "link": "https://github.com/nixonion",
       "icon": "fab fa-github"
     },
     {
       "name": "LinkedIn",
-      "link": "https://www.linkedin.com/in/ronald-hove/",
+      "link": "https://www.linkedin.com/in/nabeelsayed/",
       "icon": "fab fa-linkedin"
     }
   ]
