@@ -3,7 +3,7 @@
 // Bump this on every content or code change (after regenerating data.js, or
 // editing app.js/styles.css) — it's the only thing that evicts stale caches
 // for already-installed users. See README.md.
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `compass-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
