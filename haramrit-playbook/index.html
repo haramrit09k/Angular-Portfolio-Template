@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Compass</title>
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div id="lock-screen" class="lock-screen">
+    <div class="lock-card">
+      <img class="lock-mark" src="icons/icon.svg" alt="" width="56" height="56" />
+      <h1>Compass</h1>
+      <p class="lock-sub" id="lock-sub">Enter PIN</p>
+      <div class="pin-dots" id="pin-dots" role="status" aria-label="PIN entry"></div>
+      <p class="lock-error" id="lock-error" aria-live="polite"></p>
+      <div class="keypad" id="keypad">
+        <button type="button" class="key" data-digit="1">1</button>
+        <button type="button" class="key" data-digit="2">2</button>
+        <button type="button" class="key" data-digit="3">3</button>
+        <button type="button" class="key" data-digit="4">4</button>
+        <button type="button" class="key" data-digit="5">5</button>
+        <button type="button" class="key" data-digit="6">6</button>
+        <button type="button" class="key" data-digit="7">7</button>
+        <button type="button" class="key" data-digit="8">8</button>
+        <button type="button" class="key" data-digit="9">9</button>
+        <button type="button" class="key key-ghost" id="biometric-key" data-action="biometric" hidden>⚬</button>
+        <button type="button" class="key" data-digit="0">0</button>
+        <button type="button" class="key key-ghost" data-action="backspace" aria-label="Backspace">⌫</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-root" hidden>
+    <aside class="sidebar">
+      <div class="brand">
+        <img class="logo" src="icons/icon.svg" alt="" width="40" height="40" />
+        <div>
+          <h1>Compass</h1>
+          <p>Mission fixed. Schedule flexible. Recovery fast.</p>
+        </div>
+      </div>
+      <nav id="nav">
+        <a href="#/dashboard" data-route="/dashboard">Dashboard</a>
+        <a href="#/quick-actions" data-route="/quick-actions">Quick Actions</a>
+        <a href="#/known-bugs" data-route="/known-bugs">Known Bugs</a>
+        <a href="#/decision-trees" data-route="/decision-trees">Decision Trees</a>
+        <a href="#/weekly-review" data-route="/weekly-review">Weekly Review</a>
+        <a href="#/experiments" data-route="/experiments">Experiments</a>
+        <a href="#/settings" data-route="/settings">Settings</a>
+      </nav>
+      <button type="button" id="lock-trigger" class="lock-trigger">Lock now</button>
+    </aside>
+    <main>
+      <div id="view-outlet"></div>
+    </main>
+  </div>
+
+  <script defer src="data.js"></script>
+  <script defer src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+{
+  "meta": { "schemaVersion": 1 },
+
+  "dashboard": {
+    "currentMission": "One sentence describing what you're actually working toward right now.",
+    "todaysAnchorDefault": "The one mission-critical task for a normal day, e.g. '45-90 min of deep work.'",
+    "emergencyPrompt": "What is the next best 30 minutes?"
+  },
+
+  "quickActions": [
+    { "id": "bored", "label": "I'm bored", "protocolId": "bored" },
+    { "id": "horny", "label": "I'm horny", "protocolId": "horny" },
+    { "id": "friend-cancelled", "label": "Friend cancelled", "protocolId": "friend-cancelled" },
+    { "id": "unexpected-plan", "label": "Unexpected plan", "protocolId": "unexpected-plan" },
+    { "id": "low-motivation", "label": "Low motivation", "protocolId": "low-motivation" },
+    { "id": "tired", "label": "I'm tired", "protocolId": "tired" },
+    { "id": "late-night-plan", "label": "Late-night plan", "protocolId": "late-night-plan" }
+  ],
+
+  "protocols": [
+    {
+      "id": "bored",
+      "title": "I'm bored",
+      "situation": "Describe the situation that triggers this protocol.",
+      "symptoms": "What it feels like when this is happening.",
+      "whatNotToDo": "The default bad reaction to avoid.",
+      "immediateResponse": "The first 1-3 concrete actions to take right now.",
+      "next30Minutes": "What to commit to for the next half hour.",
+      "tomorrowReset": "What, if anything, needs resetting the next day."
+    },
+    {
+      "id": "horny",
+      "title": "I'm horny",
+      "situation": "Describe the situation that triggers this protocol.",
+      "symptoms": "What it feels like when this is happening.",
+      "whatNotToDo": "The default bad reaction to avoid.",
+      "immediateResponse": "The first 1-3 concrete actions to take right now.",
+      "next30Minutes": "What to commit to for the next half hour.",
+      "tomorrowReset": "What, if anything, needs resetting the next day."
+    },
+    {
+      "id": "friend-cancelled",
+      "title": "Friend cancelled",
+      "situation": "Describe the situation that triggers this protocol.",
+      "symptoms": "What it feels like when this is happening.",
+      "whatNotToDo": "The default bad reaction to avoid.",
+      "immediateResponse": "The first 1-3 concrete actions to take right now.",
+      "next30Minutes": "What to commit to for the next half hour.",
+      "tomorrowReset": "What, if anything, needs resetting the next day."
+    },
+    {
+      "id": "unexpected-plan",
+      "title": "Unexpected plan",
+      "situation": "Describe the situation that triggers this protocol.",
+      "symptoms": "What it feels like when this is happening.",
+      "whatNotToDo": "The default bad reaction to avoid.",
+      "immediateResponse": "The first 1-3 concrete actions to take right now.",
+      "next30Minutes": "What to commit to for the next half hour.",
+      "tomorrowReset": "What, if anything, needs resetting the next day."
+    },
+    {
+      "id": "low-motivation",
+      "title": "Low motivation",
+      "situation": "Describe the situation that triggers this protocol.",
+      "symptoms": "What it feels like when this is happening.",
+      "whatNotToDo": "The default bad reaction to avoid.",
+      "immediateResponse": "The first 1-3 concrete actions to take right now.",
+      "next30Minutes": "What to commit to for the next half hour.",
+      "tomorrowReset": "What, if anything, needs resetting the next day."
+    },
+    {
+      "id": "tired",
+      "title": "I'm tired",
+      "situation": "Describe the situation that triggers this protocol.",
+      "symptoms": "What it feels like when this is happening.",
+      "whatNotToDo": "The default bad reaction to avoid.",
+      "immediateResponse": "The first 1-3 concrete actions to take right now.",
+      "next30Minutes": "What to commit to for the next half hour.",
+      "tomorrowReset": "What, if anything, needs resetting the next day."
+    },
+    {
+      "id": "late-night-plan",
+      "title": "Late-night plan",
+      "situation": "Describe the situation that triggers this protocol.",
+      "symptoms": "What it feels like when this is happening.",
+      "whatNotToDo": "The default bad reaction to avoid.",
+      "immediateResponse": "The first 1-3 concrete actions to take right now.",
+      "next30Minutes": "What to commit to for the next half hour.",
+      "tomorrowReset": "What, if anything, needs resetting the next day."
+    }
+  ],
+
+  "knownBugs": [
+    { "id": "broken-expectations", "title": "Broken expectations", "description": "What symptom shows up.", "notes": "How you patch it." },
+    { "id": "fantasy-loop", "title": "Fantasy loop", "description": "What symptom shows up.", "notes": "How you patch it." },
+    { "id": "transition-friction", "title": "Transition friction", "description": "What symptom shows up.", "notes": "How you patch it." },
+    { "id": "productivity-guilt", "title": "Productivity guilt", "description": "What symptom shows up.", "notes": "How you patch it." },
+    { "id": "dopamine-vacuum", "title": "Dopamine vacuum after accomplishment", "description": "What symptom shows up.", "notes": "How you patch it." }
+  ],
+
+  "decisionTrees": [
+    {
+      "id": "meet-friend",
+      "title": "Should I meet a friend?",
+      "rootNodeId": "n1",
+      "nodes": {
+        "n1": { "question": "Does it conflict with your anchor?", "yes": "n2", "no": "n3" },
+        "n2": { "question": "Can you do a minimal anchor before or after?", "yes": "n3", "no": "r-skip" },
+        "n3": { "question": "Would you realistically work instead, or just scroll?", "yes": "r-skip", "no": "r-go" },
+        "r-go": { "recommendation": "Go. Protect your sleep and set a plan for tomorrow's anchor." },
+        "r-skip": { "recommendation": "Skip it or shorten it. Protect the anchor." }
+      }
+    },
+    {
+      "id": "study-tonight",
+      "title": "Should I study tonight?",
+      "rootNodeId": "n1",
+      "nodes": {
+        "n1": { "question": "Is today's anchor already done?", "yes": "r-optional", "no": "n2" },
+        "n2": { "question": "Do you have at least 25 focused minutes available?", "yes": "r-go", "no": "r-tomorrow" },
+        "r-go": { "recommendation": "Do the smallest version of the anchor now. Momentum beats intensity." },
+        "r-optional": { "recommendation": "Anchor's done. Extra study is optional, not owed." },
+        "r-tomorrow": { "recommendation": "Protect sleep tonight. Anchor first thing tomorrow." }
+      }
+    },
+    {
+      "id": "go-out-late",
+      "title": "Should I go out late?",
+      "rootNodeId": "n1",
+      "nodes": {
+        "n1": { "question": "Is this a rare, meaningful life event?", "yes": "n2", "no": "r-pass" },
+        "n2": { "question": "Can you set an exit cue before leaving?", "yes": "r-go", "no": "r-caution" },
+        "r-go": { "recommendation": "Go without guilt. Minimum anchor only tomorrow." },
+        "r-caution": { "recommendation": "Set an exit time before you leave, then go." },
+        "r-pass": { "recommendation": "Pass. Never sacrifice tomorrow to save today." }
+      }
+    },
+    {
+      "id": "should-rest",
+      "title": "Should I rest?",
+      "rootNodeId": "n1",
+      "nodes": {
+        "n1": { "question": "Is this fatigue, or just low motivation?", "yes": "r-rest", "no": "n2" },
+        "n2": { "question": "Has the anchor already been completed today?", "yes": "r-rest", "no": "r-minimal" },
+        "r-rest": { "recommendation": "Rest wins. A real recovery beats a low-quality forced hour." },
+        "r-minimal": { "recommendation": "Do the smallest version of the anchor, then rest guilt-free." }
+      }
+    },
+    {
+      "id": "masturbate",
+      "title": "Should I masturbate?",
+      "rootNodeId": "n1",
+      "nodes": {
+        "n1": { "question": "Have you delayed 15 minutes since the urge started?", "yes": "n2", "no": "r-delay" },
+        "n2": { "question": "Is this actually about boredom, loneliness, or tiredness instead?", "yes": "r-redirect", "no": "r-choose" },
+        "r-delay": { "recommendation": "Start the 15-minute delay first. No porn during the delay." },
+        "r-redirect": { "recommendation": "Address the real need directly instead: connect, move, or sleep." },
+        "r-choose": { "recommendation": "Choose consciously, without porn as the automatic default." }
+      }
+    }
+  ],
+
+  "principles": [
+    "Mission fixed. Schedule flexible. Recovery fast.",
+    "Never solve the same life problem twice.",
+    "Life always wins when it is genuinely meaningful.",
+    "Never sacrifice tomorrow to save today.",
+    "Momentum beats intensity.",
+    "Rely on systems, not motivation."
+  ],
+
+  "experiments": [
+    {
+      "id": "no-phone-bathroom",
+      "title": "No phone in bathroom",
+      "durationDays": 14,
+      "description": "Break a specific cue-to-habit loop by removing the phone from one location."
+    },
+    {
+      "id": "anchor-before-social",
+      "title": "Anchor before social",
+      "durationDays": 14,
+      "description": "Complete the daily anchor before any social plans, to reduce after-the-fact guilt."
+    },
+    {
+      "id": "urge-delay-15",
+      "title": "15-minute urge delay",
+      "durationDays": 14,
+      "description": "Practice a fixed 15-minute delay before acting on an impulsive urge."
+    }
+  ],
+
+  "weeklyReview": {
+    "metrics": [
+      { "id": "anchors", "label": "Anchors completed", "target": 7, "weight": 0.30 },
+      { "id": "recoverySpeed", "label": "Recovery speed", "target": 5, "weight": 0.20 },
+      { "id": "exercise", "label": "Exercise sessions", "target": 4, "weight": 0.20 },
+      { "id": "social", "label": "Social interactions", "target": 3, "weight": 0.15 },
+      { "id": "sundayDeepWork", "label": "Sunday deep work", "target": 1, "weight": 0.15 }
+    ]
+  }
+}
