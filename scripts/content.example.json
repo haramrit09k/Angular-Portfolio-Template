@@ -7,14 +7,19 @@
     "emergencyPrompt": "What is the next best 30 minutes?"
   },
 
+  "quickActionGroups": [
+    { "id": "internal", "label": "Something in my body or mind", "hint": "An urge, a mood, low energy — nothing external happened." },
+    { "id": "situational", "label": "Something just happened", "hint": "An external event, or a decision you need to make." }
+  ],
+
   "quickActions": [
-    { "id": "bored", "label": "I'm bored", "protocolId": "bored" },
-    { "id": "horny", "label": "I'm horny", "protocolId": "horny" },
-    { "id": "friend-cancelled", "label": "Friend cancelled", "protocolId": "friend-cancelled" },
-    { "id": "unexpected-plan", "label": "Unexpected plan", "protocolId": "unexpected-plan" },
-    { "id": "low-motivation", "label": "Low motivation", "protocolId": "low-motivation" },
-    { "id": "tired", "label": "I'm tired", "protocolId": "tired" },
-    { "id": "late-night-plan", "label": "Late-night plan", "protocolId": "late-night-plan" }
+    { "id": "bored", "label": "I'm bored", "protocolId": "bored", "group": "internal" },
+    { "id": "horny", "label": "I'm horny", "protocolId": "horny", "group": "internal" },
+    { "id": "low-motivation", "label": "Low motivation", "protocolId": "low-motivation", "group": "internal" },
+    { "id": "tired", "label": "I'm tired", "protocolId": "tired", "group": "internal" },
+    { "id": "friend-cancelled", "label": "Friend cancelled", "protocolId": "friend-cancelled", "group": "situational" },
+    { "id": "unexpected-plan", "label": "Unexpected plan", "protocolId": "unexpected-plan", "group": "situational" },
+    { "id": "late-night-plan", "label": "Late-night plan", "protocolId": "late-night-plan", "group": "situational" }
   ],
 
   "protocols": [
@@ -161,12 +166,7 @@
   ],
 
   "principles": [
-    "Mission fixed. Schedule flexible. Recovery fast.",
-    "Never solve the same life problem twice.",
-    "Life always wins when it is genuinely meaningful.",
-    "Never sacrifice tomorrow to save today.",
-    "Momentum beats intensity.",
-    "Rely on systems, not motivation."
+    "Phrase these as identity statements ('I protect tomorrow'), not rules ('Never sacrifice tomorrow') — identity holds up better under stress than willpower does."
   ],
 
   "experiments": [
@@ -197,6 +197,11 @@
       { "id": "exercise", "label": "Exercise sessions", "target": 4, "weight": 0.20 },
       { "id": "social", "label": "Social interactions", "target": 3, "weight": 0.15 },
       { "id": "sundayDeepWork", "label": "Sunday deep work", "target": 1, "weight": 0.15 }
+    ],
+    "reflectionPrompts": [
+      { "id": "worked", "label": "What worked this week?" },
+      { "id": "didnt", "label": "What didn't, and why?" },
+      { "id": "adjust", "label": "One thing to adjust for next week." }
     ]
   }
 }

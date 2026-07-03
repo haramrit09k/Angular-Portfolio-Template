@@ -173,7 +173,7 @@ h3 { margin-top: 0; }
 
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 .big { font-size: 30px; font-weight: 800; color: var(--accent); margin: 4px 0; }
-.card textarea, .card input[type="text"] {
+textarea, input[type="text"] {
   width: 100%;
   background: var(--card);
   border: 1px solid var(--line);
@@ -185,6 +185,7 @@ h3 { margin-top: 0; }
   resize: vertical;
 }
 .anchor-check { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.streak-line { color: var(--good); font-size: 13px; font-weight: 700; margin: 10px 0 0; }
 input[type="checkbox"] { transform: scale(1.2); }
 
 .score-gauge { display: flex; align-items: center; gap: 16px; }
@@ -209,6 +210,8 @@ input[type="checkbox"] { transform: scale(1.2); }
   font-weight: 600;
 }
 .quick-action-tile:hover { border-color: var(--accent); }
+.triage-tile { display: flex; flex-direction: column; gap: 8px; padding: 26px 22px; font-size: 18px; }
+.triage-tile span { font-size: 14px; font-weight: 400; color: var(--muted); }
 
 /* ---------- Protocol page ---------- */
 .protocol-fields { display: grid; gap: 14px; }
@@ -245,10 +248,18 @@ details[open] { border-color: var(--accent); }
 .tree-restart { margin-top: 18px; }
 
 /* ---------- Weekly review ---------- */
+.reflection-panel { max-width: 560px; margin-bottom: 20px; }
+.reflection-field { margin-top: 14px; }
+.reflection-field:first-of-type { margin-top: 4px; }
+.reflection-field label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+.reflection-field textarea { width: 100%; }
+
 .review-form { display: grid; gap: 16px; max-width: 520px; }
 .review-metric { display: grid; gap: 6px; }
 .review-metric label { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); }
 .review-metric input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+.momentum-line { color: var(--muted); font-size: 13px; margin-top: 16px; }
 
 /* ---------- Experiments ---------- */
 .experiment-day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 16px 0; }

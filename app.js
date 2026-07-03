@@ -31,9 +31,29 @@ function esc(str) {
   }[c]));
 }
 
-function todayKey() {
-  const d = new Date();
+function dateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function todayKey() {
+  return dateKey(new Date());
+}
+
+// Consecutive days of a completed anchor, ending today (or yesterday, if
+// today's isn't done yet — an in-progress day shouldn't read as a broken
+// streak). Shown on the dashboard as same-day reinforcement, since a
+// once-a-week rollup is too slow a feedback loop to reinforce a habit.
+function computeAnchorStreak(dailyChecklist) {
+  let streak = 0;
+  const d = new Date();
+  if (!(dailyChecklist[todayKey()] && dailyChecklist[todayKey()].anchorDone)) {
+    d.setDate(d.getDate() - 1);
+  }
+  while (dailyChecklist[dateKey(d)] && dailyChecklist[dateKey(d)].anchorDone) {
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
 }
 
 function isoWeekKey(date = new Date()) {
@@ -262,6 +282,7 @@ const Views = {
     const today = todayKey();
     const anchorDone = !!(local.dailyChecklist[today] && local.dailyChecklist[today].anchorDone);
     const anchorText = local.todayAnchorOverride || c.dashboard.todaysAnchorDefault;
+    const streak = computeAnchorStreak(local.dailyChecklist);
     const weekKey = isoWeekKey();
     const entry = local.weeklyReview[weekKey] || {};
     const score = WeeklyScore.compute(c.weeklyReview.metrics, entry);
@@ -287,12 +308,13 @@ const Views = {
             <input type="checkbox" data-action="toggle-anchor" ${anchorDone ? 'checked' : ''} />
             <span>${anchorDone ? 'Done' : 'Mark done'}</span>
           </label>
+          ${streak > 0 ? `<p class="streak-line">${streak} day${streak === 1 ? '' : 's'} in a row</p>` : ''}
         </article>
         <article class="card">
-          <h3>Weekly Score</h3>
+          <h3>Momentum</h3>
           <div class="score-gauge">
             <div class="score-ring" style="--pct:${score}"><span>${score}</span></div>
-            <p>Based on this week's <a href="#/weekly-review">review</a>.</p>
+            <p>A rough gauge — see this week's <a href="#/weekly-review">review</a>.</p>
           </div>
         </article>
         <article class="card">
@@ -309,14 +331,36 @@ const Views = {
     `;
   },
 
-  quickActions() {
+  // Triage-first: one question narrows 7 options down to 3-4, rather than
+  // showing all of them at once — choosing among fewer options costs less
+  // willpower, which matters most exactly when willpower is already low.
+  quickActions(params) {
     const c = AppState.content;
-    const tiles = c.quickActions.map((qa) => `
-      <button type="button" class="quick-action-tile" data-action="go" data-href="/protocol/${qa.protocolId}">${esc(qa.label)}</button>
-    `).join('');
+    const groupId = params && params[0];
+
+    if (!groupId) {
+      const groupTiles = c.quickActionGroups.map((g) => `
+        <button type="button" class="quick-action-tile triage-tile" data-action="go" data-href="/quick-actions/${g.id}">
+          <strong>${esc(g.label)}</strong>
+          <span>${esc(g.hint)}</span>
+        </button>
+      `).join('');
+      return `
+        <a class="back-link" href="#/dashboard">&larr; Dashboard</a>
+        <h2>What's going on right now?</h2>
+        <div class="quick-grid">${groupTiles}</div>
+      `;
+    }
+
+    const group = c.quickActionGroups.find((g) => g.id === groupId);
+    const tiles = c.quickActions
+      .filter((qa) => qa.group === groupId)
+      .map((qa) => `
+        <button type="button" class="quick-action-tile" data-action="go" data-href="/protocol/${qa.protocolId}">${esc(qa.label)}</button>
+      `).join('');
     return `
-      <a class="back-link" href="#/dashboard">&larr; Dashboard</a>
-      <h2>Quick Actions</h2>
+      <a class="back-link" href="#/quick-actions">&larr; What's going on right now?</a>
+      <h2>${esc(group ? group.label : 'Quick Actions')}</h2>
       <div class="quick-grid">${tiles}</div>
     `;
   },
@@ -420,7 +464,15 @@ const Views = {
     const local = AppState.local;
     const weekKey = isoWeekKey();
     const entry = local.weeklyReview[weekKey] || {};
+    const reflection = entry.reflection || {};
     const score = WeeklyScore.compute(c.weeklyReview.metrics, entry);
+
+    const reflectionFields = (c.weeklyReview.reflectionPrompts || []).map((p) => `
+      <div class="reflection-field">
+        <label>${esc(p.label)}</label>
+        <textarea data-action="save-reflection" data-prompt="${p.id}" rows="2">${esc(reflection[p.id] || '')}</textarea>
+      </div>
+    `).join('');
 
     const rows = c.weeklyReview.metrics.map((m) => {
       const val = entry[m.id] || 0;
@@ -436,11 +488,18 @@ const Views = {
     return `
       <a class="back-link" href="#/dashboard">&larr; Dashboard</a>
       <h2>Weekly Review — ${esc(weekKey)}</h2>
-      <div class="score-gauge" style="margin-bottom:24px;">
-        <div class="score-ring" style="--pct:${score}"><span>${score}</span></div>
-        <p>Weekly Score</p>
+
+      <div class="panel reflection-panel">
+        <h3>Reflection</h3>
+        ${reflectionFields}
       </div>
-      <div class="review-form panel">${rows}</div>
+
+      <div class="review-form panel">
+        <h3>This week's numbers</h3>
+        ${rows}
+      </div>
+
+      <p class="momentum-line">Momentum: ${score}% — a rough gauge, not a verdict.</p>
     `;
   },
 
@@ -553,6 +612,7 @@ const Router = (() => {
   const routes = [
     { pattern: /^\/dashboard$/, view: Views.dashboard },
     { pattern: /^\/quick-actions$/, view: Views.quickActions },
+    { pattern: /^\/quick-actions\/([\w-]+)$/, view: Views.quickActions },
     { pattern: /^\/protocol\/([\w-]+)$/, view: Views.protocol },
     { pattern: /^\/known-bugs$/, view: Views.knownBugs },
     { pattern: /^\/known-bugs\/([\w-]+)$/, view: Views.knownBugs },
@@ -687,6 +747,13 @@ const Router = (() => {
       if (el.dataset.action === 'save-experiment-note') {
         const rec = AppState.local.experiments[el.dataset.experiment];
         if (rec) { rec.note = el.value; Store.save(); }
+      }
+      if (el.dataset.action === 'save-reflection') {
+        const weekKey = isoWeekKey();
+        AppState.local.weeklyReview[weekKey] = AppState.local.weeklyReview[weekKey] || {};
+        AppState.local.weeklyReview[weekKey].reflection = AppState.local.weeklyReview[weekKey].reflection || {};
+        AppState.local.weeklyReview[weekKey].reflection[el.dataset.prompt] = el.value;
+        Store.save();
       }
     });
 
