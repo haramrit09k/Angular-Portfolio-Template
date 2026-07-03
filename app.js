@@ -570,7 +570,10 @@ const Router = (() => {
     return hash.slice(1) || '/dashboard';
   }
 
-  function render() {
+  // Re-renders the current route's view in place — used both for real
+  // navigation and for in-place updates (a checkbox toggle, a slider
+  // change) that redraw the same view without actually navigating.
+  function renderView() {
     const path = currentPath();
     AppState.local.ui.lastRoute = path;
     Store.save();
@@ -580,11 +583,18 @@ const Router = (() => {
       const match = path.match(route.pattern);
       if (match) {
         outlet.innerHTML = route.view(match.slice(1));
-        window.scrollTo(0, 0);
         return;
       }
     }
     outlet.innerHTML = Views.dashboard();
+  }
+
+  // Only real navigation (hashchange, initial load) should reset scroll
+  // position — in-place updates must not, or every interaction yanks the
+  // page back to the top.
+  function render() {
+    renderView();
+    window.scrollTo(0, 0);
   }
 
   function updateActiveNav(path) {
@@ -609,13 +619,13 @@ const Router = (() => {
         rec.days[day] = rec.days[day] || {};
         rec.days[day].done = !rec.days[day].done;
         Store.save();
-        render();
+        renderView();
         return;
       }
       if (action === 'start-experiment') {
         AppState.local.experiments[el.dataset.experiment] = { startedAt: todayKey(), days: {}, note: '' };
         Store.save();
-        render();
+        renderView();
         return;
       }
       if (action === 'enable-biometric') {
@@ -624,12 +634,12 @@ const Router = (() => {
         } catch (err) {
           alert('Could not enable Face ID / Touch ID: ' + err.message);
         }
-        render();
+        renderView();
         return;
       }
       if (action === 'disable-biometric') {
         WebAuthn.clearRecord();
-        render();
+        renderView();
         return;
       }
       if (action === 'lock-now') {
@@ -645,14 +655,14 @@ const Router = (() => {
         AppState.local.dailyChecklist[today] = AppState.local.dailyChecklist[today] || {};
         AppState.local.dailyChecklist[today].anchorDone = el.checked;
         Store.save();
-        render();
+        renderView();
       }
       if (el.dataset.action === 'set-metric') {
         const weekKey = isoWeekKey();
         AppState.local.weeklyReview[weekKey] = AppState.local.weeklyReview[weekKey] || {};
         AppState.local.weeklyReview[weekKey][el.dataset.metric] = Number(el.value);
         Store.save();
-        render();
+        renderView();
       }
     });
 
@@ -672,7 +682,7 @@ const Router = (() => {
 
     outlet.addEventListener('focusout', (e) => {
       const el = e.target.closest('[data-action="save-anchor"]');
-      if (el) render();
+      if (el) renderView();
     });
   }
 

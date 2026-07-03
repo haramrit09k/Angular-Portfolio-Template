@@ -30,6 +30,10 @@ a { color: inherit; }
   place-items: center;
   padding: 24px;
 }
+/* Author rules always beat the UA default [hidden] { display: none }
+   regardless of specificity — same issue as #app-root below. Without this,
+   the PIN pad stays visible (stacked above the app) after a real unlock. */
+#lock-screen[hidden] { display: none; }
 .lock-card {
   width: 100%;
   max-width: 340px;
