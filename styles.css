@@ -93,6 +93,10 @@ a { color: inherit; }
 
 /* ---------- App shell ---------- */
 #app-root { display: flex; }
+/* #app-root's own display rules above/below both use an ID selector, which
+   outranks the browser's default [hidden] { display: none } rule — without
+   this, the sidebar renders (empty) before the PIN is entered. */
+#app-root[hidden] { display: none; }
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
