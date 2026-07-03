@@ -68,7 +68,23 @@ python3 -m http.server 8080
 ```
 Then open `http://localhost:8080`.
 
-## Deploying (e.g. Netlify), no backend
+## Deploying, no backend
+
+### Vercel
+
+- Deploy `haramrit-playbook` as its own project (not the repo root — the
+  repo root is the unrelated Angular app). If connecting via the
+  dashboard/Git integration, set **Root Directory** to `haramrit-playbook`.
+- Framework preset: **Other**. Build command: none — it's static.
+- `package.json` here is intentionally minimal (just a `name` field) so
+  Vercel's default project name — and therefore the default
+  `*.vercel.app` domain — is derived from it (`compass`) rather than
+  falling back to the folder name.
+- `vercel.json` sets `Cache-Control: no-cache` on `/sw.js` so the service
+  worker always re-checks for updates instead of being served stale from
+  Vercel's static-asset cache.
+
+### Netlify
 
 - New site from Git.
 - Base directory / publish directory: `haramrit-playbook`.
@@ -105,6 +121,8 @@ haramrit-playbook/
 ├── data.js                   GENERATED — crypto constants only, no plaintext
 ├── manifest.json              PWA manifest
 ├── sw.js                       Service worker (cache-first, versioned)
+├── package.json                 Just a name field, steers the Vercel default domain
+├── vercel.json                   Cache-Control: no-cache on sw.js
 ├── icons/                      icon.svg + generated PNGs
 └── scripts/
     ├── build-content.js        content.json -> data.js
