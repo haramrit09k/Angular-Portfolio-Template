@@ -31,9 +31,29 @@ function esc(str) {
   }[c]));
 }
 
-function todayKey() {
-  const d = new Date();
+function dateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function todayKey() {
+  return dateKey(new Date());
+}
+
+// Consecutive days of a completed anchor, ending today (or yesterday, if
+// today's isn't done yet — an in-progress day shouldn't read as a broken
+// streak). Shown on the dashboard as same-day reinforcement, since a
+// once-a-week rollup is too slow a feedback loop to reinforce a habit.
+function computeAnchorStreak(dailyChecklist) {
+  let streak = 0;
+  const d = new Date();
+  if (!(dailyChecklist[todayKey()] && dailyChecklist[todayKey()].anchorDone)) {
+    d.setDate(d.getDate() - 1);
+  }
+  while (dailyChecklist[dateKey(d)] && dailyChecklist[dateKey(d)].anchorDone) {
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
 }
 
 function isoWeekKey(date = new Date()) {
@@ -262,6 +282,7 @@ const Views = {
     const today = todayKey();
     const anchorDone = !!(local.dailyChecklist[today] && local.dailyChecklist[today].anchorDone);
     const anchorText = local.todayAnchorOverride || c.dashboard.todaysAnchorDefault;
+    const streak = computeAnchorStreak(local.dailyChecklist);
     const weekKey = isoWeekKey();
     const entry = local.weeklyReview[weekKey] || {};
     const score = WeeklyScore.compute(c.weeklyReview.metrics, entry);
@@ -287,12 +308,13 @@ const Views = {
             <input type="checkbox" data-action="toggle-anchor" ${anchorDone ? 'checked' : ''} />
             <span>${anchorDone ? 'Done' : 'Mark done'}</span>
           </label>
+          ${streak > 0 ? `<p class="streak-line">${streak} day${streak === 1 ? '' : 's'} in a row</p>` : ''}
         </article>
         <article class="card">
-          <h3>Weekly Score</h3>
+          <h3>Momentum</h3>
           <div class="score-gauge">
             <div class="score-ring" style="--pct:${score}"><span>${score}</span></div>
-            <p>Based on this week's <a href="#/weekly-review">review</a>.</p>
+            <p>A rough gauge — see this week's <a href="#/weekly-review">review</a>.</p>
           </div>
         </article>
         <article class="card">
@@ -309,14 +331,36 @@ const Views = {
     `;
   },
 
-  quickActions() {
+  // Triage-first: one question narrows 7 options down to 3-4, rather than
+  // showing all of them at once — choosing among fewer options costs less
+  // willpower, which matters most exactly when willpower is already low.
+  quickActions(params) {
     const c = AppState.content;
-    const tiles = c.quickActions.map((qa) => `
-      <button type="button" class="quick-action-tile" data-action="go" data-href="/protocol/${qa.protocolId}">${esc(qa.label)}</button>
-    `).join('');
+    const groupId = params && params[0];
+
+    if (!groupId) {
+      const groupTiles = c.quickActionGroups.map((g) => `
+        <button type="button" class="quick-action-tile triage-tile" data-action="go" data-href="/quick-actions/${g.id}">
+          <strong>${esc(g.label)}</strong>
+          <span>${esc(g.hint)}</span>
+        </button>
+      `).join('');
+      return `
+        <a class="back-link" href="#/dashboard">&larr; Dashboard</a>
+        <h2>What's going on right now?</h2>
+        <div class="quick-grid">${groupTiles}</div>
+      `;
+    }
+
+    const group = c.quickActionGroups.find((g) => g.id === groupId);
+    const tiles = c.quickActions
+      .filter((qa) => qa.group === groupId)
+      .map((qa) => `
+        <button type="button" class="quick-action-tile" data-action="go" data-href="/protocol/${qa.protocolId}">${esc(qa.label)}</button>
+      `).join('');
     return `
-      <a class="back-link" href="#/dashboard">&larr; Dashboard</a>
-      <h2>Quick Actions</h2>
+      <a class="back-link" href="#/quick-actions">&larr; What's going on right now?</a>
+      <h2>${esc(group ? group.label : 'Quick Actions')}</h2>
       <div class="quick-grid">${tiles}</div>
     `;
   },
@@ -397,7 +441,7 @@ const Views = {
         <div class="panel tree-result">
           <h3>Recommendation</h3>
           <p>${esc(node.recommendation)}</p>
-          <button type="button" class="btn tree-restart" data-action="go" data-href="/decision-tree/${tree.id}">Start over</button>
+          <button type="button" class="btn tree-restart" data-action="go" data-scroll="false" data-href="/decision-tree/${tree.id}">Start over</button>
         </div>
       `;
     }
@@ -408,8 +452,8 @@ const Views = {
       <div class="panel">
         <p class="tree-question">${esc(node.question)}</p>
         <div class="tree-actions">
-          <button type="button" data-action="go" data-href="/decision-tree/${tree.id}/${node.yes}">Yes</button>
-          <button type="button" data-action="go" data-href="/decision-tree/${tree.id}/${node.no}">No</button>
+          <button type="button" data-action="go" data-scroll="false" data-href="/decision-tree/${tree.id}/${node.yes}">Yes</button>
+          <button type="button" data-action="go" data-scroll="false" data-href="/decision-tree/${tree.id}/${node.no}">No</button>
         </div>
       </div>
     `;
@@ -420,7 +464,15 @@ const Views = {
     const local = AppState.local;
     const weekKey = isoWeekKey();
     const entry = local.weeklyReview[weekKey] || {};
+    const reflection = entry.reflection || {};
     const score = WeeklyScore.compute(c.weeklyReview.metrics, entry);
+
+    const reflectionFields = (c.weeklyReview.reflectionPrompts || []).map((p) => `
+      <div class="reflection-field">
+        <label>${esc(p.label)}</label>
+        <textarea data-action="save-reflection" data-prompt="${p.id}" rows="2">${esc(reflection[p.id] || '')}</textarea>
+      </div>
+    `).join('');
 
     const rows = c.weeklyReview.metrics.map((m) => {
       const val = entry[m.id] || 0;
@@ -436,11 +488,18 @@ const Views = {
     return `
       <a class="back-link" href="#/dashboard">&larr; Dashboard</a>
       <h2>Weekly Review — ${esc(weekKey)}</h2>
-      <div class="score-gauge" style="margin-bottom:24px;">
-        <div class="score-ring" style="--pct:${score}"><span>${score}</span></div>
-        <p>Weekly Score</p>
+
+      <div class="panel reflection-panel">
+        <h3>Reflection</h3>
+        ${reflectionFields}
       </div>
-      <div class="review-form panel">${rows}</div>
+
+      <div class="review-form panel">
+        <h3>This week's numbers</h3>
+        ${rows}
+      </div>
+
+      <p class="momentum-line">Momentum: ${score}% — a rough gauge, not a verdict.</p>
     `;
   },
 
@@ -553,6 +612,7 @@ const Router = (() => {
   const routes = [
     { pattern: /^\/dashboard$/, view: Views.dashboard },
     { pattern: /^\/quick-actions$/, view: Views.quickActions },
+    { pattern: /^\/quick-actions\/([\w-]+)$/, view: Views.quickActions },
     { pattern: /^\/protocol\/([\w-]+)$/, view: Views.protocol },
     { pattern: /^\/known-bugs$/, view: Views.knownBugs },
     { pattern: /^\/known-bugs\/([\w-]+)$/, view: Views.knownBugs },
@@ -570,7 +630,10 @@ const Router = (() => {
     return hash.slice(1) || '/dashboard';
   }
 
-  function render() {
+  // Re-renders the current route's view in place — used both for real
+  // navigation and for in-place updates (a checkbox toggle, a slider
+  // change) that redraw the same view without actually navigating.
+  function renderView() {
     const path = currentPath();
     AppState.local.ui.lastRoute = path;
     Store.save();
@@ -580,11 +643,18 @@ const Router = (() => {
       const match = path.match(route.pattern);
       if (match) {
         outlet.innerHTML = route.view(match.slice(1));
-        window.scrollTo(0, 0);
         return;
       }
     }
     outlet.innerHTML = Views.dashboard();
+  }
+
+  // Only real navigation (hashchange, initial load) should reset scroll
+  // position — in-place updates must not, or every interaction yanks the
+  // page back to the top.
+  function render() {
+    renderView();
+    window.scrollTo(0, 0);
   }
 
   function updateActiveNav(path) {
@@ -599,7 +669,17 @@ const Router = (() => {
       const action = el.dataset.action;
 
       if (action === 'go') {
-        location.hash = '#' + el.dataset.href;
+        const href = '#' + el.dataset.href;
+        if (el.dataset.scroll === 'false') {
+          // Steps within the same continuous interaction (a decision tree's
+          // Yes/No/Start over) — update the URL without the scroll-to-top
+          // that a real hashchange-driven navigation gets. pushState alone
+          // doesn't fire 'hashchange', so we re-render manually.
+          history.pushState(null, '', href);
+          renderView();
+        } else {
+          location.hash = href;
+        }
         return;
       }
       if (action === 'toggle-day') {
@@ -609,13 +689,13 @@ const Router = (() => {
         rec.days[day] = rec.days[day] || {};
         rec.days[day].done = !rec.days[day].done;
         Store.save();
-        render();
+        renderView();
         return;
       }
       if (action === 'start-experiment') {
         AppState.local.experiments[el.dataset.experiment] = { startedAt: todayKey(), days: {}, note: '' };
         Store.save();
-        render();
+        renderView();
         return;
       }
       if (action === 'enable-biometric') {
@@ -624,12 +704,12 @@ const Router = (() => {
         } catch (err) {
           alert('Could not enable Face ID / Touch ID: ' + err.message);
         }
-        render();
+        renderView();
         return;
       }
       if (action === 'disable-biometric') {
         WebAuthn.clearRecord();
-        render();
+        renderView();
         return;
       }
       if (action === 'lock-now') {
@@ -645,14 +725,14 @@ const Router = (() => {
         AppState.local.dailyChecklist[today] = AppState.local.dailyChecklist[today] || {};
         AppState.local.dailyChecklist[today].anchorDone = el.checked;
         Store.save();
-        render();
+        renderView();
       }
       if (el.dataset.action === 'set-metric') {
         const weekKey = isoWeekKey();
         AppState.local.weeklyReview[weekKey] = AppState.local.weeklyReview[weekKey] || {};
         AppState.local.weeklyReview[weekKey][el.dataset.metric] = Number(el.value);
         Store.save();
-        render();
+        renderView();
       }
     });
 
@@ -668,11 +748,18 @@ const Router = (() => {
         const rec = AppState.local.experiments[el.dataset.experiment];
         if (rec) { rec.note = el.value; Store.save(); }
       }
+      if (el.dataset.action === 'save-reflection') {
+        const weekKey = isoWeekKey();
+        AppState.local.weeklyReview[weekKey] = AppState.local.weeklyReview[weekKey] || {};
+        AppState.local.weeklyReview[weekKey].reflection = AppState.local.weeklyReview[weekKey].reflection || {};
+        AppState.local.weeklyReview[weekKey].reflection[el.dataset.prompt] = el.value;
+        Store.save();
+      }
     });
 
     outlet.addEventListener('focusout', (e) => {
       const el = e.target.closest('[data-action="save-anchor"]');
-      if (el) render();
+      if (el) renderView();
     });
   }
 
@@ -702,6 +789,11 @@ const App = (() => {
   const keypadEl = document.getElementById('keypad');
   const biometricKeyEl = document.getElementById('biometric-key');
   const lockTriggerEl = document.getElementById('lock-trigger');
+  const sidebarEl = document.querySelector('.sidebar');
+  const navEl = document.getElementById('nav');
+  const navBackdropEl = document.getElementById('nav-backdrop');
+  const navToggleEl = document.getElementById('nav-toggle');
+  const quickLockEl = document.getElementById('quick-lock');
 
   let enteredPin = '';
   let busy = false;
@@ -788,6 +880,26 @@ const App = (() => {
     const avail = WebAuthn.isEnrolled() && await WebAuthn.platformAuthenticatorAvailable();
     biometricKeyEl.hidden = !avail;
   }
+
+  // Mobile nav drawer — the sidebar becomes a slide-in overlay under 900px
+  // (see styles.css), toggled by the fixed hamburger button so switching
+  // tabs never requires scrolling back up to reach the nav.
+  function openDrawer() {
+    sidebarEl.classList.add('mobile-open');
+    navBackdropEl.classList.add('visible');
+    navToggleEl.setAttribute('aria-expanded', 'true');
+  }
+  function closeDrawer() {
+    sidebarEl.classList.remove('mobile-open');
+    navBackdropEl.classList.remove('visible');
+    navToggleEl.setAttribute('aria-expanded', 'false');
+  }
+  navToggleEl.addEventListener('click', () => {
+    sidebarEl.classList.contains('mobile-open') ? closeDrawer() : openDrawer();
+  });
+  navBackdropEl.addEventListener('click', closeDrawer);
+  navEl.addEventListener('click', (e) => { if (e.target.closest('a')) closeDrawer(); });
+  quickLockEl.addEventListener('click', lockNow);
 
   keypadEl.addEventListener('click', (e) => {
     const btn = e.target.closest('.key');
