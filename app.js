@@ -56,6 +56,12 @@ function computeAnchorStreak(dailyChecklist) {
   return streak;
 }
 
+// Net balance of a manually-logged earn/spend ledger — makes "earned reward"
+// a real, checkable thing instead of a rule re-derived from memory each time.
+function computeRewardBalance(history) {
+  return (history || []).reduce((sum, h) => sum + (h.type === 'earned' ? 1 : -1), 0);
+}
+
 function isoWeekKey(date = new Date()) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
@@ -122,6 +128,7 @@ const Store = (() => {
       dailyChecklist: {},
       weeklyReview: {},
       experiments: {},
+      rewardHistory: [],
       ui: { lastRoute: '/dashboard' }
     };
   }
@@ -286,6 +293,7 @@ const Views = {
     const weekKey = isoWeekKey();
     const entry = local.weeklyReview[weekKey] || {};
     const score = WeeklyScore.compute(c.weeklyReview.metrics, entry);
+    const rewardBalance = computeRewardBalance(local.rewardHistory);
 
     return `
       <section class="hero">
@@ -321,6 +329,11 @@ const Views = {
           <h3>Quick Actions</h3>
           <p>Situational protocols, one tap away.</p>
           <a class="btn" href="#/quick-actions">Open</a>
+        </article>
+        <article class="card">
+          <h3>Rewards</h3>
+          <p class="big">${rewardBalance}</p>
+          <p>Earned credit${rewardBalance === 1 ? '' : 's'} banked. <a href="#/rewards">Manage</a>.</p>
         </article>
       </section>
 
@@ -378,9 +391,14 @@ const Views = {
       ['Next 30 minutes', p.next30Minutes, false],
       ['Tomorrow reset', p.tomorrowReset, false]
     ];
+    const rewardBanner = p.showRewardBalance
+      ? `<div class="panel reward-inline"><strong>${computeRewardBalance(AppState.local.rewardHistory)}</strong> earned credit${computeRewardBalance(AppState.local.rewardHistory) === 1 ? '' : 's'} banked. <a href="#/rewards">Check the ledger &rarr;</a></div>`
+      : '';
+
     return `
       <a class="back-link" href="#/quick-actions">&larr; Quick Actions</a>
       <h2>${esc(p.title)}</h2>
+      ${rewardBanner}
       <div class="protocol-fields">
         ${fields.map(([label, val, isDont]) => `
           <div class="protocol-field${isDont ? ' dont' : ''}">
@@ -395,13 +413,17 @@ const Views = {
   knownBugs(params) {
     const c = AppState.content;
     const highlightId = params && params[0];
-    const items = c.knownBugs.map((b) => `
+    const items = c.knownBugs.map((b) => {
+      const related = b.relatedProtocolId && c.protocols.find((p) => p.id === b.relatedProtocolId);
+      return `
       <details ${b.id === highlightId ? 'open' : ''}>
         <summary>${esc(b.title)}</summary>
         <p><strong>Symptom:</strong> ${esc(b.description)}</p>
         <p><strong>Patch:</strong> ${esc(b.notes)}</p>
+        ${related ? `<a class="bug-related-link" href="#/protocol/${related.id}">See: ${esc(related.title)} &rarr;</a>` : ''}
       </details>
-    `).join('');
+    `;
+    }).join('');
     return `
       <a class="back-link" href="#/dashboard">&larr; Dashboard</a>
       <h2>Known Bugs</h2>
@@ -481,6 +503,7 @@ const Views = {
           <label><span>${esc(m.label)}</span><span>${val} / ${m.target}</span></label>
           <input type="range" min="0" max="${m.target}" step="1" value="${val}"
                  data-action="set-metric" data-metric="${m.id}" />
+          ${m.rubric ? `<p class="metric-rubric">${esc(m.rubric)}</p>` : ''}
         </div>
       `;
     }).join('');
@@ -560,6 +583,51 @@ const Views = {
     `;
   },
 
+  rewards() {
+    const local = AppState.local;
+    const history = local.rewardHistory || [];
+    const balance = computeRewardBalance(history);
+    const recent = history.slice().reverse().slice(0, 20);
+
+    const historyItems = recent.map((h) => `
+      <li class="reward-entry reward-entry-${h.type}">
+        <span class="reward-entry-sign">${h.type === 'earned' ? '+' : '−'}</span>
+        <span class="reward-entry-note">${esc(h.note)}</span>
+        <span class="reward-entry-date">${esc(h.date)}</span>
+      </li>
+    `).join('');
+
+    return `
+      <a class="back-link" href="#/dashboard">&larr; Dashboard</a>
+      <h2>Rewards</h2>
+
+      <div class="panel">
+        <p class="eyebrow">Balance</p>
+        <p class="big">${balance}</p>
+        <p>Earned credits banked, ready to spend consciously — not guessed at in the moment.</p>
+      </div>
+
+      <div class="panel">
+        <h3>Log an earned credit</h3>
+        <input type="text" id="reward-earn-note" placeholder="What did you earn it for?" />
+        <button type="button" class="btn" data-action="add-reward" data-kind="earned">+ Add credit</button>
+      </div>
+
+      <div class="panel">
+        <h3>Log a spend</h3>
+        <input type="text" id="reward-spend-note" placeholder="What are you spending it on?" />
+        <button type="button" class="btn" data-action="add-reward" data-kind="spent">&minus; Log spend</button>
+      </div>
+
+      ${history.length ? `
+        <div class="panel">
+          <h3>History</h3>
+          <ul class="reward-history">${historyItems}</ul>
+        </div>
+      ` : ''}
+    `;
+  },
+
   settings() {
     const enrolled = WebAuthn.isEnrolled();
     const mode = WebAuthn.enrolledMode();
@@ -622,6 +690,7 @@ const Router = (() => {
     { pattern: /^\/weekly-review$/, view: Views.weeklyReview },
     { pattern: /^\/experiments$/, view: Views.experiments },
     { pattern: /^\/experiment\/([\w-]+)$/, view: Views.experiment },
+    { pattern: /^\/rewards$/, view: Views.rewards },
     { pattern: /^\/settings$/, view: Views.settings }
   ];
 
@@ -709,6 +778,17 @@ const Router = (() => {
       }
       if (action === 'disable-biometric') {
         WebAuthn.clearRecord();
+        renderView();
+        return;
+      }
+      if (action === 'add-reward') {
+        const kind = el.dataset.kind;
+        const inputEl = document.getElementById(kind === 'earned' ? 'reward-earn-note' : 'reward-spend-note');
+        const note = inputEl ? inputEl.value.trim() : '';
+        if (!note) return;
+        AppState.local.rewardHistory = AppState.local.rewardHistory || [];
+        AppState.local.rewardHistory.push({ type: kind, note, date: todayKey() });
+        Store.save();
         renderView();
         return;
       }
