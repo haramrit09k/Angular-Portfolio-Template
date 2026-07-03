@@ -397,7 +397,7 @@ const Views = {
         <div class="panel tree-result">
           <h3>Recommendation</h3>
           <p>${esc(node.recommendation)}</p>
-          <button type="button" class="btn tree-restart" data-action="go" data-href="/decision-tree/${tree.id}">Start over</button>
+          <button type="button" class="btn tree-restart" data-action="go" data-scroll="false" data-href="/decision-tree/${tree.id}">Start over</button>
         </div>
       `;
     }
@@ -408,8 +408,8 @@ const Views = {
       <div class="panel">
         <p class="tree-question">${esc(node.question)}</p>
         <div class="tree-actions">
-          <button type="button" data-action="go" data-href="/decision-tree/${tree.id}/${node.yes}">Yes</button>
-          <button type="button" data-action="go" data-href="/decision-tree/${tree.id}/${node.no}">No</button>
+          <button type="button" data-action="go" data-scroll="false" data-href="/decision-tree/${tree.id}/${node.yes}">Yes</button>
+          <button type="button" data-action="go" data-scroll="false" data-href="/decision-tree/${tree.id}/${node.no}">No</button>
         </div>
       </div>
     `;
@@ -609,7 +609,17 @@ const Router = (() => {
       const action = el.dataset.action;
 
       if (action === 'go') {
-        location.hash = '#' + el.dataset.href;
+        const href = '#' + el.dataset.href;
+        if (el.dataset.scroll === 'false') {
+          // Steps within the same continuous interaction (a decision tree's
+          // Yes/No/Start over) — update the URL without the scroll-to-top
+          // that a real hashchange-driven navigation gets. pushState alone
+          // doesn't fire 'hashchange', so we re-render manually.
+          history.pushState(null, '', href);
+          renderView();
+        } else {
+          location.hash = href;
+        }
         return;
       }
       if (action === 'toggle-day') {
@@ -712,6 +722,11 @@ const App = (() => {
   const keypadEl = document.getElementById('keypad');
   const biometricKeyEl = document.getElementById('biometric-key');
   const lockTriggerEl = document.getElementById('lock-trigger');
+  const sidebarEl = document.querySelector('.sidebar');
+  const navEl = document.getElementById('nav');
+  const navBackdropEl = document.getElementById('nav-backdrop');
+  const navToggleEl = document.getElementById('nav-toggle');
+  const quickLockEl = document.getElementById('quick-lock');
 
   let enteredPin = '';
   let busy = false;
@@ -798,6 +813,26 @@ const App = (() => {
     const avail = WebAuthn.isEnrolled() && await WebAuthn.platformAuthenticatorAvailable();
     biometricKeyEl.hidden = !avail;
   }
+
+  // Mobile nav drawer — the sidebar becomes a slide-in overlay under 900px
+  // (see styles.css), toggled by the fixed hamburger button so switching
+  // tabs never requires scrolling back up to reach the nav.
+  function openDrawer() {
+    sidebarEl.classList.add('mobile-open');
+    navBackdropEl.classList.add('visible');
+    navToggleEl.setAttribute('aria-expanded', 'true');
+  }
+  function closeDrawer() {
+    sidebarEl.classList.remove('mobile-open');
+    navBackdropEl.classList.remove('visible');
+    navToggleEl.setAttribute('aria-expanded', 'false');
+  }
+  navToggleEl.addEventListener('click', () => {
+    sidebarEl.classList.contains('mobile-open') ? closeDrawer() : openDrawer();
+  });
+  navBackdropEl.addEventListener('click', closeDrawer);
+  navEl.addEventListener('click', (e) => { if (e.target.closest('a')) closeDrawer(); });
+  quickLockEl.addEventListener('click', lockNow);
 
   keypadEl.addEventListener('click', (e) => {
     const btn = e.target.closest('.key');

@@ -29,7 +29,15 @@
         <button type="button" class="key" data-digit="7">7</button>
         <button type="button" class="key" data-digit="8">8</button>
         <button type="button" class="key" data-digit="9">9</button>
-        <button type="button" class="key key-ghost" id="biometric-key" data-action="biometric" hidden>⚬</button>
+        <button type="button" class="key key-ghost" id="biometric-key" data-action="biometric" hidden aria-label="Unlock with Face ID / Touch ID">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M4 9V6a2 2 0 0 1 2-2h3"/>
+            <path d="M15 4h3a2 2 0 0 1 2 2v3"/>
+            <path d="M20 15v3a2 2 0 0 1-2 2h-3"/>
+            <path d="M9 20H6a2 2 0 0 1-2-2v-3"/>
+            <circle cx="12" cy="12" r="2.5"/>
+          </svg>
+        </button>
         <button type="button" class="key" data-digit="0">0</button>
         <button type="button" class="key key-ghost" data-action="backspace" aria-label="Backspace">⌫</button>
       </div>
@@ -37,6 +45,24 @@
   </div>
 
   <div id="app-root" hidden>
+    <div id="nav-backdrop"></div>
+
+    <div class="mobile-toolbar">
+      <button type="button" id="nav-toggle" class="fab" aria-label="Menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="4" y1="7" x2="20" y2="7"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="17" x2="20" y2="17"/>
+        </svg>
+      </button>
+      <button type="button" id="quick-lock" class="fab" aria-label="Lock now">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="5" y="11" width="14" height="9" rx="2"/>
+          <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+        </svg>
+      </button>
+    </div>
+
     <aside class="sidebar">
       <div class="brand">
         <img class="logo" src="icons/icon.svg" alt="" width="40" height="40" />
